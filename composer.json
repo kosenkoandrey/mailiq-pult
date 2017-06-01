@@ -1,0 +1,8 @@
+{
+    "config": {
+        "vendor-dir": "protected/vendor"
+    },
+    "require": {
+        "googleads/googleads-php-lib": "^26.0"
+    }
+}
