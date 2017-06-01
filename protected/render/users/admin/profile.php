@@ -572,10 +572,10 @@
                                                     $mail_tags = array_reverse($item['tags']);
                                                     ?>
                                                     <tr>
-                                                        <td style="width: 60px;padding-right: 0">
+                                                        <td style="width: 60px;padding-right: 15px">
                                                             <span style="display: block" class="avatar-char palette-<?= $mail_icon[0] ?> bg"><i class="zmdi zmdi-<?= $mail_icon[1] ?>"></i></span>
                                                         </td>
-                                                        <td style="font-size: 16px;width: 600px;">
+                                                        <td style="font-size: 16px;">
                                                             <a class="mail_events" data-id="<?= $item['log']['id'] ?>" style="color: #4C4C4C" href="javascript:void(0)"><?= $item['log']['letter_subject'] ?></a>
                                                             <div style="font-size: 11px;"><?= $item['log']['cr_date'] ?></div>
                                                             <div style="font-size: 12px; margin-top: 5px;">
