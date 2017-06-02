@@ -96,6 +96,7 @@ $filters = htmlspecialchars(isset(APP::Module('Routing')->get['filters']) ? APP:
                                         <li><a data-action="cohort" data-ask="no" href="javascript:void(0)">Когортный анализ</a></li>
                                         <li><a data-action="geo" data-ask="no" href="javascript:void(0)">Geo анализ</a></li>
                                         <li><a data-action="sales" data-ask="no" href="javascript:void(0)">Sales tool</a></li>
+                                        <li><a data-action="source" data-ask="no" href="javascript:void(0)">Анализ источников</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -573,6 +574,12 @@ $filters = htmlspecialchars(isset(APP::Module('Routing')->get['filters']) ? APP:
                             case 'sales' :
                                 form.attr('target', '_blank');
                                 form.attr('action', '<?= APP::Module('Routing')->root ?>admin/billing/sales');
+                                var data = form.serialize();
+                                user_modal.send(data, true);
+                                break;
+                            case 'source' :
+                                form.attr('target', '_blank');
+                                form.attr('action', '<?= APP::Module('Routing')->root ?>admin/users/source');
                                 var data = form.serialize();
                                 user_modal.send(data, true);
                                 break;
