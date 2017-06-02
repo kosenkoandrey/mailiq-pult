@@ -219,40 +219,29 @@
                     <div id="last-articles" class="tab-content">
                         <?
                         foreach ($data['articles'] as $value) {
+                            foreach ($value[3] as $item) {
                             ?>
                             <div class="tab-pane fade" id="group-<?= $value[0] ?>">
                                 <div class="row">
                                     <div class="col-sm-6">
                                         <div class="blog-grid sm-margin-bottom-40">
-                                            <img class="img-responsive" src="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri ?>images/articles/482x305/<?= $value[3][0]['uri'] ?>.<?= $value[3][0]['image_type'] ?>">
-                                            <h3><a href="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri . $value[3][0]['uri'] ?>"><?= $value[3][0]['page_title'] ?></a></h3>
+                                            <img class="img-responsive" src="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri ?>images/articles/482x305/<?= $item['uri'] ?>.<?= $item['image_type'] ?>">
+                                            <h3><a href="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri . $item['uri'] ?>"><?= $item['page_title'] ?></a></h3>
                                             <ul class="blog-grid-info">
-                                                <li><?= date('F j, Y', $value[3][0]['up_date']) ?></li>
-                                                <li><i class="fa fa-comments"></i> <?= $value[3][0]['comments'] ?></li>
-                                                <li><i class="fa fa-heart"></i> <?= $value[3][0]['likes'] ?></li>
+                                                <li><?= date('F j, Y', $item['up_date']) ?></li>
+                                                <li><i class="fa fa-comments"></i> <?= $item['comments'] ?></li>
+                                                <li><i class="fa fa-heart"></i> <?= $item['likes'] ?></li>
                                             </ul>
-                                            <p><?= $value[3][0]['annotation'] ?></p>
-                                            <a class="r-more" href="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri . $value[3][0]['uri'] ?>">Читать</a>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="blog-grid sm-margin-bottom-40">
-                                            <img class="img-responsive" src="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri ?>images/articles/482x305/<?= $value[3][1]['uri'] ?>.<?= $value[3][1]['image_type'] ?>">
-                                            <h3><a href="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri . $value[3][1]['uri'] ?>"><?= $value[3][1]['page_title'] ?></a></h3>
-                                            <ul class="blog-grid-info">
-                                                <li><?= date('F j, Y', $value[3][1]['up_date']) ?></li>
-                                                <li><i class="fa fa-comments"></i> <?= $value[3][1]['comments'] ?></li>
-                                                <li><i class="fa fa-heart"></i> <?= $value[3][1]['likes'] ?></li>
-                                            </ul>
-                                            <p><?= $value[3][1]['annotation'] ?></p>
-                                            <a class="r-more" href="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri . $value[3][1]['uri'] ?>">Читать</a>
+                                            <p><?= $item['annotation'] ?></p>
+                                            <a class="r-more" href="<?= APP::Module('Routing')->root . APP::Module('Blog')->uri . $item['uri'] ?>">Читать</a>
                                         </div>
                                     </div>
                                 </div><!--/end row-->
                             </div>
                             <?
+                            }
                         }
-                        ?>
+                        ?>    
                     </div>
                     <!-- End Tab Content -->
                 </div>
