@@ -2,7 +2,7 @@
 return [
     'routes' => [
         ['mail\/letters\/view\/(?P<letter_id_hash>.*)(\?.*)?',                                      'Mail', 'ViewLetter'],          // View letter
-        ['admin\/mail\/letters\/preview\/(?P<letter_id_hash>.*)(\?.*)?',                            'Mail', 'PreviewLetter'],       // Preview letter
+        ['admin\/mail\/letters\/preview\/(?P<letter_id_hash>[a-zA-Z0-9-_]+)(\?.*)?',                'Mail', 'PreviewLetter'],       // Preview letter
         ['admin\/mail\/letters\/(?P<group_sub_id_hash>.*)\/groups\/add',                            'Mail', 'AddLettersGroup'],     // Add letters group
         ['admin\/mail\/letters\/(?P<group_sub_id_hash>.*)\/groups\/(?P<group_id_hash>.*)\/edit',    'Mail', 'EditLettersGroup'],    // Edit letters group
         ['admin\/mail\/letters\/(?P<group_sub_id_hash>.*)\/add(\?.*)?',                             'Mail', 'AddLetter'],           // Add letter
