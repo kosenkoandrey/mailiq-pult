@@ -3507,23 +3507,23 @@ class Analytics {
                             'all' => $letters['count'],
                             'open' => [
                                 'value' => $letters['open'],
-                                'pct' => $letters['open'] ? round($letters['open'] / ($letters['count'] / 100), 2) : 0
+                                'pct' => $letters['open'] ? $letters['count'] ? round($letters['open'] / ($letters['count'] / 100), 2) : 0 : 0
                             ],
                             'click' => [
                                 'value' => $letters['click'],
-                                'pct' => $letters['click'] ? round($letters['click'] / ($letters['count'] / 100), 2) : 0
+                                'pct' => $letters['click'] ? $letters['count'] ? round($letters['click'] / ($letters['count'] / 100), 2) : 0 : 0
                             ],
                             'bounce' => [
                                 'value' => $letters['bounce'],
-                                'pct' => $letters['bounce'] ? round($letters['bounce'] / ($letters['count'] / 100), 2) : 0
+                                'pct' => $letters['bounce'] ? $letters['count'] ? round($letters['bounce'] / ($letters['count'] / 100), 2) : 0 : 0
                             ],
                             'unsubscribe' => [
                                 'value' => $letters['unsubscribe'],
-                                'pct' => $letters['unsubscribe'] ? round($letters['unsubscribe'] / ($letters['count'] / 100), 2) : 0
+                                'pct' => $letters['unsubscribe'] ? $letters['count'] ? round($letters['unsubscribe'] / ($letters['count'] / 100), 2) : 0 : 0
                             ],
                             'spamreport' => [
                                 'value' => $letters['spamreport'],
-                                'pct' => $letters['spamreport'] ? round($letters['spamreport'] / ($letters['count'] / 100), 2) : 0
+                                'pct' => $letters['spamreport'] ? $letters['count'] ? round($letters['spamreport'] / ($letters['count'] / 100), 2) : 0 : 0
                             ]
                         ],
                         'invoices' => [
