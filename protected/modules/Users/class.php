@@ -3642,14 +3642,13 @@ class Users {
             $uid = APP::Module('Users')->UsersSearch($rules);
         }
 
+        $data['source'] = [];
         foreach(APP::Module('DB')->Select(
             APP::Module('Users')->settings['module_users_db_connection'], 
             ['fetchAll', PDO::FETCH_ASSOC], 
             ['value', 'count(user) as count'], 'users_about',
-            [
-                ['item', '=', 'source', PDO::PARAM_STR],
-                ['user', 'IN', $uid, PDO::PARAM_INT]
-            ], false, ['value']
+            [['item', '=', 'source', PDO::PARAM_STR], ['user', 'IN', $uid, PDO::PARAM_INT]],
+            false, ['value'], false, ['count', 'desc']
         ) as $item){
             $filter = $rules;
             $filter['rules'][] = [

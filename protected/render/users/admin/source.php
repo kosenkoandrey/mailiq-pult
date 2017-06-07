@@ -53,6 +53,11 @@
                             <h2>Анализ источников</h2>
                         </div>
                         <div class="card-body">
+                            <form class="form-horizontal p-15">
+                                <div class="col-md-3">
+                                    <input type="text" id="word"  class="form-control" placeholder="Поиск.." />
+                                </div>
+                            </form>
                             <table data-target="#table" id="table" class="table table-hover table-striped">
                                 <thead>
                                     <tr>
@@ -62,7 +67,7 @@
                                 </thead>
                                 <tbody>
                                 	<?php foreach($data['source'] as $item){ ?>
-                                		<tr>
+                                		<tr data-word="<?= $item['value']; ?>">
 	                                        <th><?= $item['value']; ?></th>
 	                                        <th><a href="<?= APP::Module('Routing')->root ?>admin/users?filters=<?= $item['filter']; ?>" target="_blank"><?= $item['count']; ?></a></th>
 	                                    </tr>
@@ -92,7 +97,22 @@
 
 	    <? APP::Render('core/widgets/js') ?>
 	    <script>
-	        
+	       $(function(){
+                $(document).on('input propertychange paste', '#word', function(e){
+                    var word = $(this).val();
+                    if(word){
+                        $('#table tbody tr').each(function(i, j){
+                            if(!$(j).data('word').match(new RegExp(word, "g"))){
+                                $(j).hide();
+                            }else{
+                                $(j).show();
+                            }
+                        });
+                    }else{
+                        $('#table tbody tr').show();
+                    }
+                });
+           });
 	    </script>
     </body>
 </html>                       
