@@ -1134,6 +1134,7 @@
                             '</tr>',
                         '</table>'
                     ].join(''));
+
                     
                     $('.date-picker-from', $trigger_rule_item).datetimepicker({
                         format: 'YYYY-MM-DD',
@@ -1142,6 +1143,8 @@
                         objects['reg_date_from'] = e;
                         $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
                     });
+                    if (rule.settings.date_from !== undefined) $('.trigger_settings input[data-id="date_from"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_from * 1000));
+                    
                     
                     $('.date-picker-to', $trigger_rule_item).datetimepicker({
                         format: 'YYYY-MM-DD',
@@ -1150,6 +1153,8 @@
                         objects['reg_date_to'] = e;
                         $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
                     });
+                    if (rule.settings.date_to !== undefined) $('.trigger_settings input[data-id="date_to"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_to * 1000));
+                    
                     break;
                 case 'social_id':
                     $('.trigger_settings', $trigger_rule_item).append([
@@ -1541,6 +1546,7 @@
                         objects['mail_events_date_from'] = e;
                         $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
                     });
+                    if (rule.settings.date_from !== undefined) $('.trigger_settings input[data-id="date_from"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_from * 1000));
                     
                     $('.date-picker-to', $trigger_rule_item).datetimepicker({
                         format: 'YYYY-MM-DD',
@@ -1549,6 +1555,7 @@
                         objects['mail_events_date_to'] = e;
                         $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
                     });
+                    if (rule.settings.date_to !== undefined) $('.trigger_settings input[data-id="date_to"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_to * 1000));
 
                     if (rule.settings.value !== undefined) $('.trigger_settings select[data-id="value"]', $trigger_rule_item).val(rule.settings.action);
                     $('.trigger_settings select[data-id="value"]', $trigger_rule_item).on('change', function(){$target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))))});
