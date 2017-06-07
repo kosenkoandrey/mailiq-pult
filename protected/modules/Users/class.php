@@ -3621,6 +3621,50 @@ class Users {
         echo json_encode($data);
         exit;
     }
+
+    public function UserSource(){
+        if (isset($_POST['rules']) and $_POST['rules']){
+            $rules = json_decode($_POST['rules'], true);
+            $uid = APP::Module('Users')->UsersSearch($rules);
+        }else{
+            $rules = [
+                "logic" => "intersect",
+                "rules" => [
+                    [
+                        "method" => "email",
+                        "settings" => [
+                            "logic" => "LIKE",
+                            "value" => "%"
+                        ]
+                    ]
+                ]
+            ];
+            $uid = APP::Module('Users')->UsersSearch($rules);
+        }
+
+        foreach(APP::Module('DB')->Select(
+            APP::Module('Users')->settings['module_users_db_connection'], 
+            ['fetchAll', PDO::FETCH_ASSOC], 
+            ['value', 'count(user) as count'], 'users_about',
+            [
+                ['item', '=', 'source', PDO::PARAM_STR],
+                ['user', 'IN', $uid, PDO::PARAM_INT]
+            ], false, ['value']
+        ) as $item){
+            $filter = $rules;
+            $filter['rules'][] = [
+                'method' => 'source',
+                'settings' => [
+                    'logic' => '=',
+                    'value' => $item['value']
+                ]
+            ];
+            $item['filter'] = APP::Module('Crypt')->Encode(json_encode($filter));
+            $data['source'][] = $item;
+        }
+
+        APP::Render('users/admin/source', 'include', $data);
+    }
 }
 
 class UsersSearch {
