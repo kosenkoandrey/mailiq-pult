@@ -776,6 +776,11 @@ class Tunnels {
                 'save_utm'          => isset($_POST['save_utm']) ? $_POST['save_utm'] : false,
                 'debug'             => isset($_POST['debug'])
             ]));
+        }else{
+            echo json_encode([
+                'status' => 'error',
+                'code' => 101
+            ]);
         }
     }
     
