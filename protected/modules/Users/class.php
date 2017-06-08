@@ -2056,7 +2056,7 @@ class Users {
     public function APILogin() {
         $status = 'error';
 
-        if (($user = $this->Login($_POST['email'], APP::Module('Crypt')->Encode($_POST['password']))) && ((int) $this->settings['module_users_login_service'])) {
+        if (isset($_POST['email']) && ($user = $this->Login($_POST['email'], APP::Module('Crypt')->Encode($_POST['password']))) && ((int) $this->settings['module_users_login_service'])) {
             $this->user = $this->Auth($user, true, isset($_POST['remember-me']));
 
             $status = 'success';
@@ -2100,7 +2100,7 @@ class Users {
             'errors' => []
         ];
 
-        if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+        if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
             $out['status'] = 'error';
             $out['errors'][] = 1;
         } else if (APP::Module('DB')->Select($this->settings['module_users_db_connection'], ['fetchColumn', 0], ['id'], 'users', [['email', '=', $_POST['email'], PDO::PARAM_STR]])) {
@@ -2206,7 +2206,7 @@ class Users {
             'errors' => []
         ];
 
-        if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+        if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
             $out['status'] = 'error';
             $out['errors'][] = 1;
         } else if (!APP::Module('DB')->Select($this->settings['module_users_db_connection'], ['fetchColumn', 0], ['id'], 'users', [['email', '=', $_POST['email'], PDO::PARAM_STR]])) {
