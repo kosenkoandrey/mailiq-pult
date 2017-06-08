@@ -2100,7 +2100,7 @@ class Users {
             'errors' => []
         ];
 
-        if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+        if (!isset($_POST['email']) || filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
             $out['status'] = 'error';
             $out['errors'][] = 1;
         } else if (APP::Module('DB')->Select($this->settings['module_users_db_connection'], ['fetchColumn', 0], ['id'], 'users', [['email', '=', $_POST['email'], PDO::PARAM_STR]])) {
@@ -2206,10 +2206,10 @@ class Users {
             'errors' => []
         ];
 
-        if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+        if (!isset($_POST['email']) || filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
             $out['status'] = 'error';
             $out['errors'][] = 1;
-        } else if (!isset($_POST['email']) || !APP::Module('DB')->Select($this->settings['module_users_db_connection'], ['fetchColumn', 0], ['id'], 'users', [['email', '=', $_POST['email'], PDO::PARAM_STR]])) {
+        } else if (!APP::Module('DB')->Select($this->settings['module_users_db_connection'], ['fetchColumn', 0], ['id'], 'users', [['email', '=', $_POST['email'], PDO::PARAM_STR]])) {
             $out['status'] = 'error';
             $out['errors'][] = 2;
         }
