@@ -294,9 +294,15 @@ class Costs {
         $log = [];
         $total_amt = 0;
         
-        $awql_date = isset(APP::Module('Routing')->get['date']) ? [str_replace('-', '', APP::Module('Routing')->get['date']), str_replace('-', '', APP::Module('Routing')->get['date'])] : 'YESTERDAY';
-        $awql_date_value = is_array($awql_date) ? implode(',', $awql_date) : $awql_date;
-        $date = isset(APP::Module('Routing')->get['date']) ? APP::Module('Routing')->get['date'] : date('Y-m-d', strtotime('-1 day'));
+        if(isset(APP::Module('Routing')->get['date_from']) && isset(APP::Module('Routing')->get['date_to'])){
+            $awql_date = [str_replace('-', '', APP::Module('Routing')->get['date_from']), str_replace('-', '', APP::Module('Routing')->get['date_to'])];
+            $awql_date_value = implode(',', $awql_date);
+            $date = isset(APP::Module('Routing')->get['date']) ? APP::Module('Routing')->get['date'] : date('Y-m-d', strtotime('-1 day'));
+        }else{
+            $awql_date = isset(APP::Module('Routing')->get['date']) ? [str_replace('-', '', APP::Module('Routing')->get['date']), str_replace('-', '', APP::Module('Routing')->get['date'])] : 'YESTERDAY';
+            $awql_date_value = is_array($awql_date) ? implode(',', $awql_date) : $awql_date;
+            $date = isset(APP::Module('Routing')->get['date']) ? APP::Module('Routing')->get['date'] : date('Y-m-d', strtotime('-1 day'));
+        }
         
         $oAuth2Credential = (new OAuth2TokenBuilder())
             ->fromFile(ROOT . '/protected/modules/Costs/adsapi_php.ini')
@@ -361,7 +367,7 @@ class Costs {
         
         // KEYWORDS ////////////////////////////////////////////////////////////
         $reportDownloader = new ReportDownloader($session);
-        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT CampaignId, CampaignName, Criteria, Cost, AccountCurrencyCode FROM DISPLAY_KEYWORD_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $pult_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
+        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT CampaignId, CampaignName, Criteria, Cost, AccountCurrencyCode, Date FROM DISPLAY_KEYWORD_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $pult_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
         $xml_report = $reportDownloadResult->getAsString();
         $report_words = new SimpleXMLElement($xml_report);
         $log['words'] = $report_words;
@@ -380,6 +386,7 @@ class Costs {
             }
             
             $out[] = [
+                'date' => $row['day'],
                 'amount' => round($cost / 1000000, 2),
                 'utm_source' => $this->settings['module_costs_google_utm_source'],
                 'utm_medium' => $medium_label,
@@ -398,7 +405,7 @@ class Costs {
         // FIXED PLACEMENT /////////////////////////////////////////////////////
         if (count($fixed_placement_campaigns)) {
             $reportDownloader = new ReportDownloader($session);
-            $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost FROM CAMPAIGN_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $fixed_placement_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
+            $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost, Date FROM CAMPAIGN_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $fixed_placement_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
             $xml_report = $reportDownloadResult->getAsString();
             $report_fixed_placement = new SimpleXMLElement($xml_report);
             $log['fixed_placement'] = $report_fixed_placement;
@@ -417,6 +424,7 @@ class Costs {
                 }
 
                 $out[] = [
+                    'date' => $row['day'],
                     'amount' => round($cost / 1000000, 2),
                     'utm_source' => $this->settings['module_costs_google_utm_source'],
                     'utm_medium' => $medium_label,
@@ -436,7 +444,7 @@ class Costs {
         // TEMA ////////////////////////////////////////////////////////////////
         if (count($tema_campaigns)) {
             $reportDownloader = new ReportDownloader($session);
-            $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost FROM CAMPAIGN_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $tema_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
+            $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost, Date FROM CAMPAIGN_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $tema_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
             $xml_report = $reportDownloadResult->getAsString();
             $report_tema = new SimpleXMLElement($xml_report);
             $log['tema'] = $report_tema;
@@ -455,6 +463,7 @@ class Costs {
                 }
                 
                 $out[] = [
+                    'date' => $row['day'],
                     'amount' => round($cost / 1000000, 2),
                     'utm_source' => $this->settings['module_costs_google_utm_source'],
                     'utm_medium' => $medium_label,
@@ -479,7 +488,7 @@ class Costs {
                 $this->settings['module_costs_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
                 ['COUNT(id)'], 'costs',
                 [
-                    ['cost_date', '=', $date, PDO::PARAM_STR],
+                    ['cost_date', '=', $value['date'], PDO::PARAM_STR],
                     ['utm_source', '=', '"' . $value['utm_source'] . '"', PDO::PARAM_STR],
                     ['utm_medium', '=', '"' . $value['utm_medium'] . '"', PDO::PARAM_STR],
                     ['utm_campaign', '=', '"' . $value['utm_campaign'] . '"', PDO::PARAM_STR],
@@ -496,7 +505,7 @@ class Costs {
                         'user_id' => '"0"',
                         'comment' => '"auto"',
                         'amount' => [$value['amount'], PDO::PARAM_STR],
-                        'cost_date' => [$date, PDO::PARAM_STR],
+                        'cost_date' => [$value['date'], PDO::PARAM_STR],
                         'cr_date' => 'NOW()',
                         'utm_source' => [$value['utm_source'], PDO::PARAM_STR],
                         'utm_medium' => [$value['utm_medium'], PDO::PARAM_STR],
