@@ -857,6 +857,62 @@ class Billing {
             <?
         }
     }
+    
+    public function StatProducts() {
+        $out = [];
+        
+        foreach (APP::Module('DB')->Select(
+            $this->settings['module_billing_db_connection'], ['fetchAll', PDO::FETCH_ASSOC], 
+            [
+                'id',
+                'name'
+            ], 
+            'billing_products'
+        ) as $product) {
+            $filter = [
+                ['id', 'IN', APP::Module('DB')->Select(
+                    $this->settings['module_billing_db_connection'], ['fetchAll', PDO::FETCH_COLUMN], 
+                    [
+                        'invoice'
+                    ], 
+                    'billing_invoices_products',
+                    [
+                        ['product', '=', $product['id'], PDO::PARAM_INT]
+                    ]
+                )],
+                ['state', '=', 'success', PDO::PARAM_STR],
+                ['amount', '!=', '0', PDO::PARAM_INT]
+            ];
+            
+            if (isset(APP::Module('Routing')->get['date'])) {
+                $filter = array_merge($filter, [
+                    ['cr_date', 'BETWEEN', '"' . APP::Module('Routing')->get['date']['from'] . ' 00:00:00" AND "' . APP::Module('Routing')->get['date']['to'] . ' 00:00:00"', PDO::PARAM_STR]
+                ]);
+            }
+            
+            $out[] = [
+                'name' => $product['name'],
+                'invoices' => APP::Module('DB')->Select(
+                    $this->settings['module_billing_db_connection'], ['fetchAll', PDO::FETCH_COLUMN], 
+                    [
+                        'id'
+                    ], 
+                    'billing_invoices',
+                    $filter
+                ),
+                'sum' => (int) APP::Module('DB')->Select(
+                    $this->settings['module_billing_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
+                    [
+                        'SUM(amount)'
+                    ], 
+                    'billing_invoices',
+                    $filter
+                )
+            ];
+        }
+
+        APP::Render('billing/admin/products/stat', 'include', $out);
+    }
 
     
     public function APIDashboard() {

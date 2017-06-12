@@ -14,6 +14,8 @@
         <link href="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/google-material-color/dist/palette.css" rel="stylesheet">
         <link href="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/bootstrap-sweetalert/lib/sweet-alert.css" rel="stylesheet">
         <link href="<?= APP::Module('Routing')->root ?>public/ui/vendors/bootgrid/jquery.bootgrid.min.css" rel="stylesheet">
+        <link href="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" rel="stylesheet"> 
+
         <style>
             #utm-list .item {
                 font-size: 15px;
@@ -117,6 +119,7 @@
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-right">
                                         <li><a href="#" data-target="#utm-roi-sort-modal" data-toggle="modal" data-mode="root" data-sort-field="default" data-sort-mode="asc"> Сортировка "source" меток</a></li>
+                                        <li><a href="#" data-target="#utm-roi-date-modal" data-toggle="modal"> Фильтр по дате</a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -181,6 +184,38 @@
             </div>
         </div>
         
+        <div id="utm-roi-date-modal" role="dialog" class="modal fade bootbox" tabindex="-1">
+            <div class="modal-dialog" style="z-index:999;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal"><span>&times;</span></button>
+                        <h4 class="modal-title">Фильтр по дате</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-horizontal form-padding">
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">Дата</label>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-xs-6">
+                                            <input id="utm-roi-date-from" type="text" class="form-control">
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <input id="utm-roi-date-to" type="text" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link waves-effect save_date">Применить</button>
+                        <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Отмена</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <form id="analytics_cohorts" target="_blank" method="post" action="<?= APP::Module('Routing')->root ?>admin/analytics/cohorts">
             <input type="hidden" name="rules" value="">
             <input type="hidden" name="group" value="month">
@@ -213,11 +248,15 @@
         <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/json/dist/jquery.json.min.js"></script>
         <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
         <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bootgrid/jquery.bootgrid.updated.min.js"></script>
+        <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/moment/min/moment.min.js"></script>
+        <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 
         <? APP::Render('core/widgets/js') ?>
 
         <!-- OPTIONAL -->
         <script>
+            var filter_date = <?= isset(APP::Module('Routing')->get['date']) ? json_encode(APP::Module('Routing')->get['date']) : 'false' ?>; 
+            
             function formatAmount(nStr) {
                 nStr += '';
                 x = nStr.split('.');
@@ -234,11 +273,26 @@
                 switch(label) {
                     case 'root':
                         $('#utm-list').html('<div class="utm-source"></div>');
+                        
+                        var total = {
+                            cost: [],
+                            revenue: []
+                        };
 
                         $.each(res.sort, function(source_index, source_value) {
                             var utm_value = res.labels[source_value].name ? res.labels[source_value].name : '<Не определено>';
                             $('#utm-list > .utm-source').append('<div class="item source" data-state="inactive" id="' + source_value + '"><div class="control"><i class="zmdi zmdi-plus-square zmdi-hc-fw"></i><span data-target="#utm-roi-sort-modal" data-toggle="modal" data-mode="source" data-value="' + res.labels[source_value].name + '" data-sort-field="default" data-sort-mode="asc">' + utm_value + '</span></div><div class="item-value pull-right">' + formatAmount(res.labels[source_value].stat.roi) + ' %</div><div class="item-value pull-right">' + formatAmount(res.labels[source_value].stat.profit) + ' <i class="fa fa-rub" aria-hidden="true"></i></div><div class="item-value pull-right">' + formatAmount(res.labels[source_value].stat.revenue) + ' <i class="fa fa-rub" aria-hidden="true"></i></div><div class="item-value pull-right">' + formatAmount(res.labels[source_value].stat.cost) + ' <i class="fa fa-rub" aria-hidden="true"></i></div><div class="btn-group item-links"><button data-filters="' + res.labels[source_value].ref + '" class="btn btn-default btn-xs ref">справочник</button><button data-rules="' + res.labels[source_value].rules + '" class="btn btn-default btn-xs analytics-cohorts">когортный анализ</button></div></div>');
+                        
+                            total.cost.push(res.labels[source_value].stat.cost);
+                            total.revenue.push(res.labels[source_value].stat.revenue);
                         });
+                        
+                        var total_cost = total.cost.reduce(function(a, b) { return a + b; }, 0);
+                        var total_revenue = total.revenue.reduce(function(a, b) { return a + b; }, 0);
+                        var total_profit = total_revenue - total_cost;
+                        var total_roi = ((total_revenue - total_cost) / total_cost) * 100;
+
+                        $('#utm-list').append('<div class="item"><div class="control">Итого</div><div class="item-value pull-right">' + formatAmount(total_roi.toFixed(2)) + ' %</div><div class="item-value pull-right">' + formatAmount(total_profit) + ' <i class="fa fa-rub" aria-hidden="true"></i></div><div class="item-value pull-right">' + formatAmount(total_revenue) + ' <i class="fa fa-rub" aria-hidden="true"></i></div><div class="item-value pull-right">' + formatAmount(total_cost) + ' <i class="fa fa-rub" aria-hidden="true"></i></div><div class="btn-group item-links"></div></div>');
                         break;
                     case 'source':
                         $('#' + item + ' > .utm-medium').empty();
@@ -288,6 +342,9 @@
                         settings: {
                             label: label,
                             value: value
+                        },
+                        filters: {
+                            date: filter_date
                         },
                         rules: '<?= json_encode($data["rules"]) ?>'
                     },
@@ -393,6 +450,9 @@
                                 value: value,
                                 sort: sort
                             },
+                            filters: {
+                                date: filter_date
+                            },
                             rules: '<?= json_encode($data["rules"]) ?>'
                         },
                         success: function(res) {
@@ -404,6 +464,23 @@
 
             $(document).ready(function() {
                 //$('#utm-list').html('<center><div class="preloader pl-xxl"><svg class="pl-circular" viewBox="25 25 50 50"><circle class="plc-path" cx="50" cy="50" r="20" /></svg></div></center>');
+                
+                $('#utm-roi-date-from').datetimepicker({
+                    format: 'YYYY-MM-DD',
+                    defaultDate: filter_date ? filter_date.from : new Date()
+                });
+                
+                $('#utm-roi-date-to').datetimepicker({
+                    format: 'YYYY-MM-DD',
+                    defaultDate: filter_date ? filter_date.to : new Date()
+                });
+                
+                $('.save_date').on('click', function(e) {
+                    document.location.href = '<?= APP::Module('Routing')->root ?>admin/analytics/utm/roi?date[from]=' + $('#utm-roi-date-from').val() + '&date[to]=' + $('#utm-roi-date-to').val();
+                
+                    $('#utm-roi-date-modal .modal-footer').remove();
+                    $('#utm-roi-date-modal .modal-body').html('<center><div class="preloader pl-xxl"><svg class="pl-circular" viewBox="25 25 50 50"><circle class="plc-path" cx="50" cy="50" r="20" /></svg></div></center>');
+                });
                 
                 GetLabels('root', null, null);
 

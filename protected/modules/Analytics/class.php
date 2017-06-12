@@ -536,8 +536,7 @@ class Analytics {
                                 );
                                 APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('TRUNCATE TABLE analytics_utm_roi_tmp');
                             } else {
-                                $users_utm = APP::Module('DB')->Select(
-                                    APP::Module('Users')->settings['module_users_db_connection'], ['fetchAll', PDO::FETCH_COLUMN],['DISTINCT(utm_source)'],'users_utm_index');
+                                $users_utm = APP::Module('DB')->Select(APP::Module('Users')->settings['module_users_db_connection'], ['fetchAll', PDO::FETCH_COLUMN],['DISTINCT(utm_source)'],'users_utm_index');
                             }
 
                             foreach ($users_utm as $item) {
@@ -561,17 +560,25 @@ class Analytics {
                                 $target_uid = $uid ? array_intersect($uid, $utm_uid) : $utm_uid;
                                 APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('INSERT INTO analytics_utm_roi_tmp (user) VALUES (' . implode('),(', $target_uid) . ')');
 
+                                $revenue_filter = [
+                                    ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
+                                    ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
+                                    ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
+                                ];
+                                
+                                if (is_array($_POST['filters']['date'])) {
+                                    $revenue_filter = array_merge($revenue_filter, [
+                                        ['billing_invoices.cr_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . ' 00:00:00" AND "' . $_POST['filters']['date']['to'] . ' 00:00:00"', PDO::PARAM_STR]
+                                    ]);
+                                }
+                                
                                 $revenue_value = (int) APP::Module('DB')->Select(
                                     APP::Module('Billing')->settings['module_billing_db_connection'],
                                     ['fetch', PDO::FETCH_COLUMN], ['SUM(billing_invoices.amount)'],
                                     'billing_invoices',
-                                    [
-                                        ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
-                                        ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
-                                        ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
-                                    ]
+                                    $revenue_filter
                                 );
-
+                                
                                 APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('TRUNCATE TABLE analytics_utm_roi_tmp');
 
                                 // Вычисление расхода
@@ -620,6 +627,10 @@ class Analytics {
 
                                         if (($use_utm_alias) && (isset($utm_labels[$value['utm_label']]))) $utm_labels[$value['utm_label']] = $utm_alias_value;
                                     }
+                                }
+                                
+                                if (is_array($_POST['filters']['date'])) {
+                                    $cost_utm[] = ['cost_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . '" AND "' . $_POST['filters']['date']['to'] . '"', PDO::PARAM_STR];
                                 }
                                 
                                 foreach ($utm_labels as $label => $value) {
@@ -859,15 +870,23 @@ class Analytics {
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('INSERT INTO analytics_utm_roi_tmp (user)  VALUES (' . implode('),(', $utm_uid) . ')');
 
+                                    $revenue_filter = [
+                                        ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
+                                        ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
+                                        ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
+                                    ];
+
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $revenue_filter = array_merge($revenue_filter, [
+                                            ['billing_invoices.cr_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . ' 00:00:00" AND "' . $_POST['filters']['date']['to'] . ' 00:00:00"', PDO::PARAM_STR]
+                                        ]);
+                                    }
+
                                     $revenue_value = (int) APP::Module('DB')->Select(
                                         APP::Module('Billing')->settings['module_billing_db_connection'],
                                         ['fetch', PDO::FETCH_COLUMN], ['SUM(billing_invoices.amount)'],
                                         'billing_invoices',
-                                        [
-                                            ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
-                                            ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
-                                            ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
-                                        ]
+                                        $revenue_filter
                                     );
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('TRUNCATE TABLE analytics_utm_roi_tmp');
@@ -920,6 +939,10 @@ class Analytics {
                                         }
                                     }
                                     
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $cost_utm[] = ['cost_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . '" AND "' . $_POST['filters']['date']['to'] . '"', PDO::PARAM_STR];
+                                    }
+
                                     foreach ($utm_labels as $label => $value) {
                                         $cost_utm[] = ['utm_' . $label, '=', $value, PDO::PARAM_STR];
                                     }
@@ -1175,15 +1198,23 @@ class Analytics {
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('INSERT INTO analytics_utm_roi_tmp (user) VALUES (' . implode('),(', $utm_uid) . ')');
 
+                                    $revenue_filter = [
+                                        ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
+                                        ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
+                                        ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
+                                    ];
+
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $revenue_filter = array_merge($revenue_filter, [
+                                            ['billing_invoices.cr_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . ' 00:00:00" AND "' . $_POST['filters']['date']['to'] . ' 00:00:00"', PDO::PARAM_STR]
+                                        ]);
+                                    }
+
                                     $revenue_value = (int) APP::Module('DB')->Select(
                                         APP::Module('Billing')->settings['module_billing_db_connection'],
                                         ['fetch', PDO::FETCH_COLUMN], ['SUM(billing_invoices.amount)'],
                                         'billing_invoices',
-                                        [
-                                            ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
-                                            ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
-                                            ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
-                                        ]
+                                        $revenue_filter
                                     );
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('TRUNCATE TABLE analytics_utm_roi_tmp');
@@ -1237,6 +1268,10 @@ class Analytics {
                                         }
                                     }
 
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $cost_utm[] = ['cost_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . '" AND "' . $_POST['filters']['date']['to'] . '"', PDO::PARAM_STR];
+                                    }
+                                    
                                     foreach ($utm_labels as $label => $value) {
                                         $cost_utm[] = ['utm_' . $label, '=', $value, PDO::PARAM_STR];
                                     }
@@ -1510,15 +1545,23 @@ class Analytics {
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('INSERT INTO analytics_utm_roi_tmp (user) VALUES (' . implode('),(', $utm_uid) . ')');
 
+                                    $revenue_filter = [
+                                        ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
+                                        ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
+                                        ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
+                                    ];
+
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $revenue_filter = array_merge($revenue_filter, [
+                                            ['billing_invoices.cr_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . ' 00:00:00" AND "' . $_POST['filters']['date']['to'] . ' 00:00:00"', PDO::PARAM_STR]
+                                        ]);
+                                    }
+
                                     $revenue_value = (int) APP::Module('DB')->Select(
                                         APP::Module('Billing')->settings['module_billing_db_connection'],
                                         ['fetch', PDO::FETCH_COLUMN], ['SUM(billing_invoices.amount)'],
                                         'billing_invoices',
-                                        [
-                                            ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
-                                            ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
-                                            ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
-                                        ]
+                                        $revenue_filter
                                     );
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('TRUNCATE TABLE analytics_utm_roi_tmp');
@@ -1573,6 +1616,10 @@ class Analytics {
                                         }
                                     }
 
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $cost_utm[] = ['cost_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . '" AND "' . $_POST['filters']['date']['to'] . '"', PDO::PARAM_STR];
+                                    }
+                                    
                                     foreach ($utm_labels as $label => $value) {
                                         $cost_utm[] = ['utm_' . $label, '=', $value, PDO::PARAM_STR];
                                     }
@@ -1864,15 +1911,23 @@ class Analytics {
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('INSERT INTO analytics_utm_roi_tmp (user) VALUES (' . implode('),(', $utm_uid) . ')');
 
+                                    $revenue_filter = [
+                                        ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
+                                        ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
+                                        ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
+                                    ];
+
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $revenue_filter = array_merge($revenue_filter, [
+                                            ['billing_invoices.cr_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . ' 00:00:00" AND "' . $_POST['filters']['date']['to'] . ' 00:00:00"', PDO::PARAM_STR]
+                                        ]);
+                                    }
+
                                     $revenue_value = (int) APP::Module('DB')->Select(
                                         APP::Module('Billing')->settings['module_billing_db_connection'],
                                         ['fetch', PDO::FETCH_COLUMN], ['SUM(billing_invoices.amount)'],
                                         'billing_invoices',
-                                        [
-                                            ['billing_invoices.user_id', 'IN', 'SELECT analytics_utm_roi_tmp.user FROM analytics_utm_roi_tmp', PDO::PARAM_INT],
-                                            ['billing_invoices.state', '=', 'success', PDO::PARAM_STR],
-                                            ['billing_invoices.amount', '!=', '0', PDO::PARAM_INT]
-                                        ]
+                                        $revenue_filter
                                     );
 
                                     APP::Module('DB')->Open($this->settings['module_analytics_db_connection'])->query('TRUNCATE TABLE analytics_utm_roi_tmp');
@@ -1928,6 +1983,10 @@ class Analytics {
                                         }
                                     }
 
+                                    if (is_array($_POST['filters']['date'])) {
+                                        $cost_utm[] = ['cost_date', 'BETWEEN', '"' . $_POST['filters']['date']['from'] . '" AND "' . $_POST['filters']['date']['to'] . '"', PDO::PARAM_STR];
+                                    }
+                                    
                                     foreach ($utm_labels as $label => $value) {
                                         $cost_utm[] = ['utm_' . $label, '=', $value, PDO::PARAM_STR];
                                     }
