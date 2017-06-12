@@ -53,6 +53,7 @@ return [
     ],
     'currency_code' => [
         'UAH' => 'грн.',
+        'RUB' => 'руб.',
         'RUR' => 'руб.',
         'USD' => '$',
         'EUR' => '€'

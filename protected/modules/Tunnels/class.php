@@ -758,23 +758,30 @@ class Tunnels {
         header('Access-Control-Allow-Origin: ' . APP::$conf['location'][1]);
         header('Content-Type: application/json');
         
-        echo json_encode($this->Subscribe([
-            'email'             => $_POST['email'],
-            'tunnel'            => $_POST['tunnel'],
-            'activation'        => $_POST['activation'],
-            'source'            => isset($_POST['source']) ? substr($_POST['source'], 0, 100) : 'APISubscribe',
-            'roles_tunnel'      => isset($_POST['roles_tunnel']) ? $_POST['roles_tunnel'] : false,
-            'states_tunnel'     => isset($_POST['states_tunnel']) ? $_POST['states_tunnel'] : false,
-            'welcome'           => isset($_POST['welcome']) ? $_POST['welcome'] : false,
-            'queue_timeout'     => isset($_POST['queue_timeout']) ? $_POST['queue_timeout'] : $this->settings['module_tunnels_default_queue_timeout'],
-            'complete_tunnels'  => isset($_POST['complete_tunnels']) ? $_POST['complete_tunnels'] : false,
-            'pause_tunnels'     => isset($_POST['pause_tunnels']) ? $_POST['pause_tunnels'] : false,
-            'input_data'        => isset($_POST['input_data']) ? $_POST['input_data'] : [],
-            'about_user'        => isset($_POST['about_user']) ? $_POST['about_user'] : [],
-            'auto_save_about'   => isset($_POST['auto_save_about']) ? $_POST['auto_save_about'] : false,
-            'save_utm'          => isset($_POST['save_utm']) ? $_POST['save_utm'] : false,
-            'debug'             => isset($_POST['debug'])
-        ]));
+        if(isset($_POST['email'])){
+            echo json_encode($this->Subscribe([
+                'email'             => $_POST['email'],
+                'tunnel'            => $_POST['tunnel'],
+                'activation'        => $_POST['activation'],
+                'source'            => isset($_POST['source']) ? substr($_POST['source'], 0, 100) : 'APISubscribe',
+                'roles_tunnel'      => isset($_POST['roles_tunnel']) ? $_POST['roles_tunnel'] : false,
+                'states_tunnel'     => isset($_POST['states_tunnel']) ? $_POST['states_tunnel'] : false,
+                'welcome'           => isset($_POST['welcome']) ? $_POST['welcome'] : false,
+                'queue_timeout'     => isset($_POST['queue_timeout']) ? $_POST['queue_timeout'] : $this->settings['module_tunnels_default_queue_timeout'],
+                'complete_tunnels'  => isset($_POST['complete_tunnels']) ? $_POST['complete_tunnels'] : false,
+                'pause_tunnels'     => isset($_POST['pause_tunnels']) ? $_POST['pause_tunnels'] : false,
+                'input_data'        => isset($_POST['input_data']) ? $_POST['input_data'] : [],
+                'about_user'        => isset($_POST['about_user']) ? $_POST['about_user'] : [],
+                'auto_save_about'   => isset($_POST['auto_save_about']) ? $_POST['auto_save_about'] : false,
+                'save_utm'          => isset($_POST['save_utm']) ? $_POST['save_utm'] : false,
+                'debug'             => isset($_POST['debug'])
+            ]));
+        }else{
+            echo json_encode([
+                'status' => 'error',
+                'code' => 101
+            ]);
+        }
     }
     
     public function TestSubscribe() {

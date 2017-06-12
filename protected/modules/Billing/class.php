@@ -28,6 +28,7 @@ class Billing {
         $this->products_actions = new ProductsActions();
         $this->invoices_actions = new InvoicesActions();
         $this->payments_actions = new PaymentsActions();
+        $this->UpdateExchangeRate();
     }
 
     
@@ -1626,9 +1627,9 @@ class Billing {
         $comment = Array();
 
         foreach ($_POST as $key => $value) {
-            $comment[] = $key. ' - ' . $value;
+            $comment[] = $key. ' - ' . (is_array($value) ? json_encode($value) : $value);
         }
-        
+        var_dump($comment); die();
         $message = implode('<br>', $comment);
 
         if (!APP::Module('DB')->Select(
@@ -1656,21 +1657,19 @@ class Billing {
         $xml = simplexml_load_file('http://www.cbr.ru/scripts/XML_daily.asp');
 
         if (count($xml->Valute)) {
-            APP::Module('DB')->Open($this->settings['module_billing_db_connection'])->query('TRUNCATE TABLE billing_currency');
             $code = array_reverse($this->conf['currency_code']);
-
             foreach ($xml->Valute as $item) {
                 if (in_array($item->CharCode->__toString(), array_keys($code))) {
                     $curs = (float) $item->Value->__toString() / (int) $item->Nominal->__toString();
                     $value = $curs + $curs * $this->conf['currency_plus'];
                     
-                    APP::Module('DB')->Insert(
+                    APP::Module('DB')->Update(
                         $this->settings['module_billing_db_connection'], 'billing_currency', [
-                            'code' => [$item->CharCode->__toString(), PDO::PARAM_STR],
-                            'value' => [$value, PDO::PARAM_INT],
-                            'symbol' => [$this->conf['currency_code'][$item->CharCode->__toString()], PDO::PARAM_STR],
+                            'value' => $value,
+                            'symbol' => $this->conf['currency_code'][$item->CharCode->__toString()],
                             'cr_date'  => 'NOW()'
-                        ]
+                        ],
+                        [['code', '=', $item->CharCode->__toString(), PDO::PARAM_STR]]
                     );
                 }
             }
