@@ -17,6 +17,7 @@ return [
         ['admin\/billing\/invoices\/diff(\?.*)?',                       'Billing', 'DiffInvoices'],
         ['admin\/billing\/invoices\/diff\/import(\?.*)?',               'Billing', 'DiffImportInvoices'],
         
+        ['admin\/billing\/products\/stat(\?.*)?',                       'Billing', 'StatProducts'],
         
         
         

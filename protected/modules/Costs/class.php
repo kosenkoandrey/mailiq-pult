@@ -313,31 +313,76 @@ class Costs {
             ->withReportSettings($reportSettings)
             ->build();
 
+        
+        ////////////////////////////////////////////////////////////////////////
+        
+        
+        $billing_currency = [];
+        
+        foreach (APP::Module('DB')->Select(
+            APP::Module('Billing')->settings['module_billing_db_connection'], ['fetchAll', PDO::FETCH_ASSOC], 
+            ['code', 'value'], 'billing_currency'
+        ) as $value) {
+            $billing_currency[$value['code']] = $value['value'];
+        }
+        
+        $pult_campaigns = [];
+        $fixed_placement_campaigns = [];
+        $tema_campaigns = [];
+        $medium_campaigns = [];
+
         $reportDownloader = new ReportDownloader($session);
-        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT CampaignId, CampaignName, Criteria, Cost, AccountCurrencyCode FROM DISPLAY_KEYWORD_PERFORMANCE_REPORT DURING ' . $awql_date_value, DownloadFormat::XML);
+        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT CampaignId, Labels FROM CAMPAIGN_PERFORMANCE_REPORT DURING ' . $awql_date_value, DownloadFormat::XML);
+        $xml_report = $reportDownloadResult->getAsString();
+        $report_campaigns = new SimpleXMLElement($xml_report);
+         
+        foreach ($report_campaigns->table->row as $campaign_value) {
+            $campaign_labels = (array) json_decode((string) $campaign_value['labels']);
+            
+            if (array_search('pult', $campaign_labels) !== false) {
+                $pult_campaigns[] = (string) $campaign_value['campaignID'];
+            }
+            
+            if (array_search('fixed_placement', $campaign_labels) !== false) {
+                $fixed_placement_campaigns[] = (string) $campaign_value['campaignID'];
+            }
+            
+            if (array_search('tema', $campaign_labels) !== false) {
+                $tema_campaigns[] = (string) $campaign_value['campaignID'];
+            }
+            
+            foreach ($campaign_labels as $label_value) {
+                if (preg_match('/^medium=(.*)$/', $label_value, $matches)) {
+                    $medium_campaigns[$matches[1]][] = (string) $campaign_value['campaignID'];
+                }
+            }
+        }
+
+        
+        // KEYWORDS ////////////////////////////////////////////////////////////
+        $reportDownloader = new ReportDownloader($session);
+        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT CampaignId, CampaignName, Criteria, Cost, AccountCurrencyCode FROM DISPLAY_KEYWORD_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $pult_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
         $xml_report = $reportDownloadResult->getAsString();
         $report_words = new SimpleXMLElement($xml_report);
         $log['words'] = $report_words;
-
-        $reportDownloader = new ReportDownloader($session);
-        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT LabelId, LabelName FROM LABEL_REPORT WHERE LabelName = "fixed_placement"', DownloadFormat::XML);
-        $xml_report = $reportDownloadResult->getAsString();
-        $report_label = new SimpleXMLElement($xml_report);
-        $log['label'] = $report_label;
-
-        $reportDownloader = new ReportDownloader($session);
-        $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost FROM CAMPAIGN_PERFORMANCE_REPORT WHERE Labels CONTAINS_ALL ["' . $report_label->table->row['labelID'] . '"] DURING ' . $awql_date_value, DownloadFormat::XML);
-        $xml_report = $reportDownloadResult->getAsString();
-        $report_campaign = new SimpleXMLElement($xml_report);
-        $log['campaign'] = $report_campaign;
-
+        
         foreach ($report_words->table->row as $row) {
-            $total_amt += $row['cost'];
+            $cost = $row['cost'] * $billing_currency[(string) $row['currency']];
+            $total_amt += $cost;
 
+            $medium_label = $this->settings['module_costs_google_utm_medium'];
+            
+            foreach ($medium_campaigns as $key => $value) {
+                if (array_search(strval($row['campaignID']), $value) !== false) {
+                    $medium_label = $key;
+                    break;
+                }
+            }
+            
             $out[] = [
-                'amount' => round($row['cost'] / 1000000, 2),
+                'amount' => round($cost / 1000000, 2),
                 'utm_source' => $this->settings['module_costs_google_utm_source'],
-                'utm_medium' => $this->settings['module_costs_google_utm_medium'],
+                'utm_medium' => $medium_label,
                 'utm_campaign' => strval($row['campaignID']),
                 'utm_term' => strval($row['keyword']),
                 'utm_content' => '',
@@ -346,24 +391,88 @@ class Costs {
                 
             ];
         }
+        // print_r($report_words); exit;
+        ////////////////////////////////////////////////////////////////////////
+        
 
-        foreach ($report_campaign->table->row as $row) {
-            $total_amt += $row['cost'];
-            
-            $out[] = [
-                'amount' => round($row['cost'] / 1000000, 2),
-                'utm_source' => $this->settings['module_costs_google_utm_source'],
-                'utm_medium' => $this->settings['module_costs_google_utm_medium'],
-                'utm_campaign' => strval($row['campaignID']),
-                'utm_term' => '',
-                'utm_content' => '',
-                'utm_compaing_desc' => strval($row['campaign']),
-                'utm_content_desc' => '',
+        // FIXED PLACEMENT /////////////////////////////////////////////////////
+        if (count($fixed_placement_campaigns)) {
+            $reportDownloader = new ReportDownloader($session);
+            $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost FROM CAMPAIGN_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $fixed_placement_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
+            $xml_report = $reportDownloadResult->getAsString();
+            $report_fixed_placement = new SimpleXMLElement($xml_report);
+            $log['fixed_placement'] = $report_fixed_placement;
+
+            foreach ($report_fixed_placement->table->row as $row) {
+                $cost = $row['cost'] * $billing_currency[(string) $row['currency']];
+                $total_amt += $cost;
                 
-            ];
+                $medium_label = $this->settings['module_costs_google_utm_medium'];
+            
+                foreach ($medium_campaigns as $key => $value) {
+                    if (array_search(strval($row['campaignID']), $value) !== false) {
+                        $medium_label = $key;
+                        break;
+                    }
+                }
+
+                $out[] = [
+                    'amount' => round($cost / 1000000, 2),
+                    'utm_source' => $this->settings['module_costs_google_utm_source'],
+                    'utm_medium' => $medium_label,
+                    'utm_campaign' => strval($row['campaignID']),
+                    'utm_term' => '',
+                    'utm_content' => '',
+                    'utm_compaing_desc' => strval($row['campaign']),
+                    'utm_content_desc' => '',
+
+                ];
+            }
+            // print_r($report_fixed_placement); exit;
         }
+        ////////////////////////////////////////////////////////////////////////
+        
+        
+        // TEMA ////////////////////////////////////////////////////////////////
+        if (count($tema_campaigns)) {
+            $reportDownloader = new ReportDownloader($session);
+            $reportDownloadResult = $reportDownloader->downloadReportWithAwql('SELECT AccountCurrencyCode, CampaignId, CampaignName, Cost FROM CAMPAIGN_PERFORMANCE_REPORT WHERE CampaignId IN [' . implode(',', $tema_campaigns) . '] DURING ' . $awql_date_value, DownloadFormat::XML);
+            $xml_report = $reportDownloadResult->getAsString();
+            $report_tema = new SimpleXMLElement($xml_report);
+            $log['tema'] = $report_tema;
+
+            foreach ($report_tema->table->row as $row) {
+                $cost = $row['cost'] * $billing_currency[(string) $row['currency']];
+                $total_amt += $cost;
+
+                $medium_label = $this->settings['module_costs_google_utm_medium'];
+            
+                foreach ($medium_campaigns as $key => $value) {
+                    if (array_search(strval($row['campaignID']), $value) !== false) {
+                        $medium_label = $key;
+                        break;
+                    }
+                }
+                
+                $out[] = [
+                    'amount' => round($cost / 1000000, 2),
+                    'utm_source' => $this->settings['module_costs_google_utm_source'],
+                    'utm_medium' => $medium_label,
+                    'utm_campaign' => strval($row['campaignID']),
+                    'utm_term' => '',
+                    'utm_content' => '',
+                    'utm_compaing_desc' => strval($row['campaign']),
+                    'utm_content_desc' => '',
+
+                ];
+            }
+            // print_r($report_tema); exit;
+        }
+        ////////////////////////////////////////////////////////////////////////
+        
 
         $log['out'] = $out;
+        $log['total_amt'] = round($total_amt / 1000000, 2);
 
         foreach ($out as $value) {
             if (!APP::Module('DB')->Select(
@@ -382,7 +491,7 @@ class Costs {
             )) {
                 APP::Module('DB')->Insert(
                     $this->settings['module_costs_db_connection'], 'costs',
-                    Array(
+                    [
                         'id' => 'NULL',
                         'user_id' => '"0"',
                         'comment' => '"auto"',
@@ -396,13 +505,11 @@ class Costs {
                         'utm_content' => [$value['utm_content'], PDO::PARAM_STR],
                         'utm_compaing_desc' => [$value['utm_compaing_desc'], PDO::PARAM_STR],
                         'utm_content_desc' => [$value['utm_content_desc'], PDO::PARAM_STR],
-                    )
+                    ]
                 );
             }
         }
-        
-        $log['total_amt'] = round($total_amt / 1000000, 2);
-        
+
         APP::Module('Triggers')->Exec(
             'download_google_costs', 
             [

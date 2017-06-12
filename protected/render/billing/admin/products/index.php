@@ -47,7 +47,8 @@ $filters = htmlspecialchars(isset($_GET['filters']) ? APP::Module('Crypt')->Deco
                                         <i class="zmdi zmdi-more-vert"></i>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-right">
-                                        <li><a href="<?= APP::Module('Routing')->root ?>admin/billing/products/add">Add product</a></li>
+                                        <li><a href="<?= APP::Module('Routing')->root ?>admin/billing/products/add">Добавить продукт</a></li>
+                                        <li><a href="<?= APP::Module('Routing')->root ?>admin/billing/products/stat">Статистика по продажам</a></li>
                                     </ul>
                                 </li>
                             </ul>
