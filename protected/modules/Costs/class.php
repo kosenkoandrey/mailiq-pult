@@ -386,7 +386,7 @@ class Costs {
             }
             
             $out[] = [
-                'date' => $row['date'],
+                'date' => $row['day'],
                 'amount' => round($cost / 1000000, 2),
                 'utm_source' => $this->settings['module_costs_google_utm_source'],
                 'utm_medium' => $medium_label,
@@ -424,7 +424,7 @@ class Costs {
                 }
 
                 $out[] = [
-                    'date' => $row['date'],
+                    'date' => $row['day'],
                     'amount' => round($cost / 1000000, 2),
                     'utm_source' => $this->settings['module_costs_google_utm_source'],
                     'utm_medium' => $medium_label,
@@ -463,7 +463,7 @@ class Costs {
                 }
                 
                 $out[] = [
-                    'date' => $row['date'],
+                    'date' => $row['day'],
                     'amount' => round($cost / 1000000, 2),
                     'utm_source' => $this->settings['module_costs_google_utm_source'],
                     'utm_medium' => $medium_label,
