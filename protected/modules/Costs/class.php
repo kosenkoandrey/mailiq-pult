@@ -297,7 +297,7 @@ class Costs {
         if(isset(APP::Module('Routing')->get['date_from']) && isset(APP::Module('Routing')->get['date_to'])){
             $awql_date = [str_replace('-', '', APP::Module('Routing')->get['date_from']), str_replace('-', '', APP::Module('Routing')->get['date_to'])];
             $awql_date_value = implode(',', $awql_date);
-            $date = isset(APP::Module('Routing')->get['date']) ? APP::Module('Routing')->get['date'] : date('Y-m-d', strtotime('-1 day'));
+            $date = false;
         }else{
             $awql_date = isset(APP::Module('Routing')->get['date']) ? [str_replace('-', '', APP::Module('Routing')->get['date']), str_replace('-', '', APP::Module('Routing')->get['date'])] : 'YESTERDAY';
             $awql_date_value = is_array($awql_date) ? implode(',', $awql_date) : $awql_date;
@@ -386,7 +386,7 @@ class Costs {
             }
             
             $out[] = [
-                'date' => $row['day'],
+                'date' => strval($row['day']),
                 'amount' => round($cost / 1000000, 2),
                 'utm_source' => $this->settings['module_costs_google_utm_source'],
                 'utm_medium' => $medium_label,
@@ -398,7 +398,7 @@ class Costs {
                 
             ];
         }
-        // print_r($report_words); exit;
+        //print_r($report_words); exit;
         ////////////////////////////////////////////////////////////////////////
         
 
@@ -424,7 +424,7 @@ class Costs {
                 }
 
                 $out[] = [
-                    'date' => $row['day'],
+                    'date' => strval($row['day']),
                     'amount' => round($cost / 1000000, 2),
                     'utm_source' => $this->settings['module_costs_google_utm_source'],
                     'utm_medium' => $medium_label,
@@ -436,7 +436,7 @@ class Costs {
 
                 ];
             }
-            // print_r($report_fixed_placement); exit;
+             //print_r($report_fixed_placement); exit;
         }
         ////////////////////////////////////////////////////////////////////////
         
@@ -463,7 +463,7 @@ class Costs {
                 }
                 
                 $out[] = [
-                    'date' => $row['day'],
+                    'date' => strval($row['day']),
                     'amount' => round($cost / 1000000, 2),
                     'utm_source' => $this->settings['module_costs_google_utm_source'],
                     'utm_medium' => $medium_label,
@@ -475,7 +475,7 @@ class Costs {
 
                 ];
             }
-            // print_r($report_tema); exit;
+             //print_r($report_tema); exit;
         }
         ////////////////////////////////////////////////////////////////////////
         
@@ -831,7 +831,7 @@ class Costs {
                 'pult_ref', ['fetch', PDO::FETCH_COLUMN], 
                 ['COUNT(id)'], 'cost',
                 [
-                    ['cost_date', '=', $data['date'], PDO::PARAM_STR],
+                    ['cost_date', '=', ($data['date'] ? $data['date'] : $value['date']), PDO::PARAM_STR],
                     ['utm_source', '=', '"' . $value['utm_source'] . '"', PDO::PARAM_STR],
                     ['utm_medium', '=', '"' . $value['utm_medium'] . '"', PDO::PARAM_STR],
                     ['utm_campaign', '=', '"' . $value['utm_campaign'] . '"', PDO::PARAM_STR],
@@ -848,7 +848,7 @@ class Costs {
                         'user_id' => 'NULL',
                         'comment' => '"auto"',
                         'cost' => [$value['amount'], PDO::PARAM_STR],
-                        'cost_date' => [$data['date'], PDO::PARAM_STR],
+                        'cost_date' => [($data['date'] ? $data['date'] : $value['date']), PDO::PARAM_STR],
                         'cr_date' => 'NOW()',
                         'utm_source' => [$value['utm_source'], PDO::PARAM_STR],
                         'utm_medium' => [$value['utm_medium'], PDO::PARAM_STR],
