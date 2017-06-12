@@ -1629,7 +1629,7 @@ class Billing {
         foreach ($_POST as $key => $value) {
             $comment[] = $key. ' - ' . (is_array($value) ? json_encode($value) : $value);
         }
-        var_dump($comment); die();
+
         $message = implode('<br>', $comment);
 
         if (!APP::Module('DB')->Select(
