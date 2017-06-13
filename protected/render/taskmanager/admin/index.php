@@ -75,7 +75,7 @@ $filters = htmlspecialchars(isset(APP::Module('Routing')->get['filters']) ? APP:
                                         <th data-column-id="token" data-visible="false" data-sortable="false">Token</th>
                                         <th data-column-id="module">Module</th>
                                         <th data-column-id="method">Method</th>
-                                        <th data-column-id="args" data-visible="false" data-sortable="false">Args</th>
+                                        <th data-column-id="args" data-sortable="false">Args</th>
                                         <th data-column-id="state">State</th>
                                         <th data-column-id="cr_date">Create date</th>
                                         <th data-column-id="exec_date">Exec date</th>
