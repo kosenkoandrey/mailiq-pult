@@ -374,6 +374,14 @@ class APP {
         
         if (self::$conf['gelf']) {
             if (array_search($type, self::$conf['gelf']['types']) !== false) {
+                $short_message = 'PHP Error';
+                
+                switch ($code) {
+                    case 0: $short_message = $details[1] . ' in ' . $details[2] . ' line ' . $details[3]; break;
+                    case 1: $short_message = $details[0]; break;
+                    case 2: $short_message = $details['message']; break;
+                }
+                
                 $message = [
                     'date' => date('H:i:s', time()), 
                     'code' => $code, 
@@ -387,10 +395,11 @@ class APP {
 
                 $gelf_message = new Gelf\Message();
                 $gelf_message
-                        ->setShortMessage($message['details']['message'])
+                        ->setShortMessage($short_message)
                         ->setLevel(\Psr\Log\LogLevel::ALERT)
                         ->setFullMessage(print_r($message, true))
                         ->setFacility($type)
+                        ->setHost('backend-service@' . DEFAULT_DOMAIN)
                 ;
 
                 $gelf_publisher->publish($gelf_message);

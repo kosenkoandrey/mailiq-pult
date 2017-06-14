@@ -1927,6 +1927,9 @@ class Users {
     }
     
     public function APISearchUsersAction() {
+        set_time_limit(10800);
+        ini_set('memory_limit', '4G');
+        
         header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
         header('Access-Control-Allow-Origin: ' . APP::$conf['location'][1]);
         header('Content-Type: application/json');
