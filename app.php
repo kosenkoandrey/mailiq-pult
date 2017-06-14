@@ -355,15 +355,14 @@ class APP {
     
     public static function Logging($type, $view, $code, $details = null) {
         if (self::$conf['logs']) {
+            $message = json_encode([date('H:i:s', time()), $code, $details], JSON_PARTIAL_OUTPUT_ON_ERROR);
             $file = self::$conf['logs'] . '/' . $type . '-' . date('d-m-Y', time()) . '.log';
             
             if (!file_exists($file)) {
                 touch($file);
                 chmod($file, 0777);
             }
-            
-            $message = json_encode([date('H:i:s', time()), $code, $details], JSON_PARTIAL_OUTPUT_ON_ERROR);
-            
+
             file_put_contents(
                 $file,
                 $message . "\n",
@@ -371,6 +370,31 @@ class APP {
             );
             
             self::Module('Messages')->Add($type, false, $message);
+        }
+        
+        if (self::$conf['gelf']) {
+            if (array_search($type, self::$conf['gelf']['types']) !== false) {
+                $message = [
+                    'date' => date('H:i:s', time()), 
+                    'code' => $code, 
+                    'details' => $details
+                ];
+
+                $gelf_transport = new Gelf\Transport\TcpTransport(self::$conf['gelf']['server'], self::$conf['gelf']['port']);
+
+                $gelf_publisher = new Gelf\Publisher();
+                $gelf_publisher->addTransport($gelf_transport);
+
+                $gelf_message = new Gelf\Message();
+                $gelf_message
+                        ->setShortMessage($message['details']['message'])
+                        ->setLevel(\Psr\Log\LogLevel::ALERT)
+                        ->setFullMessage(print_r($message, true))
+                        ->setFacility($type)
+                ;
+
+                $gelf_publisher->publish($gelf_message);
+            }
         }
         
         if ($view) {

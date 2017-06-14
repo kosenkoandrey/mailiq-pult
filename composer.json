@@ -3,6 +3,7 @@
         "vendor-dir": "protected/vendor"
     },
     "require": {
-        "googleads/googleads-php-lib": "^26.0"
+        "googleads/googleads-php-lib": "^26.0",
+        "graylog2/gelf-php": "~1.5"
     }
 }
