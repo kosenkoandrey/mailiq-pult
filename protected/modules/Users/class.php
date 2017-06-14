@@ -3293,6 +3293,14 @@ class Users {
         header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
         header('Access-Control-Allow-Origin: ' . APP::$conf['location'][1]);
         header('Content-Type: application/json');
+
+        if(!isset($_POST['mail_log']) || !$_POST['mail_log']){
+            echo json_encode([
+                'status' => 'error',
+                'errors' => [2]
+            ]);
+            exit;
+        }
         
         $mail_log = APP::Module('Crypt')->Decode($_POST['mail_log']);
         
