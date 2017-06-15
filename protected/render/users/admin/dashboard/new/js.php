@@ -365,14 +365,14 @@ ob_end_clean();
             $('#new-user-date-from').val(Math.round(e.date._d.getTime() / 1000));
             $('#new-users-erros-period > button').removeAttr('disabled');
             $('#new-user-calendar-to-block').data('DateTimePicker').minDate(e.date);
-            $('#new-users-calendar-from-block').html(e.date._d.getDate() + '.' + (e.date._d.getMonth() + 1) + '.' + e.date._d.getFullYear());
+            $('#new-users-calendar-from').html(e.date._d.getDate() + '.' + (e.date._d.getMonth() + 1) + '.' + e.date._d.getFullYear());
             GetNewUsers(false);
         });
         $('#new-user-calendar-to-block').on('dp.change', function (e) {
             $('#new-user-date-to').val(Math.round(e.date._d.getTime() / 1000));
             $('#new-users-erros-period > button').removeAttr('disabled');
             $('#new-user-calendar-from-block').data('DateTimePicker').maxDate(e.date);
-            $('#new-users-calendar-to-block').html(e.date._d.getDate() + '.' + (e.date._d.getMonth() + 1) + '.' + e.date._d.getFullYear());
+            $('#new-users-calendar-to').html(e.date._d.getDate() + '.' + (e.date._d.getMonth() + 1) + '.' + e.date._d.getFullYear());
             GetNewUsers(false);
         });
 
