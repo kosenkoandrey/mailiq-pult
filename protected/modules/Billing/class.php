@@ -1666,8 +1666,7 @@ class Billing {
                     APP::Module('DB')->Update(
                         $this->settings['module_billing_db_connection'], 'billing_currency', [
                             'value' => $value,
-                            'symbol' => $this->conf['currency_code'][$item->CharCode->__toString()],
-                            'cr_date'  => 'NOW()'
+                            'symbol' => $this->conf['currency_code'][$item->CharCode->__toString()]
                         ],
                         [['code', '=', $item->CharCode->__toString(), PDO::PARAM_STR]]
                     );

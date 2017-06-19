@@ -688,7 +688,7 @@ class Users {
                 [
                     ['user', '=', $user_id, PDO::PARAM_INT],
                     ['item', '=', 'state', PDO::PARAM_STR],
-                    ['value', '!=', 'active', PDO::PARAM_STR]
+                    ['value', 'NOT IN', ['active', 'blacklist'], PDO::PARAM_STR]
                 ]
             );
 

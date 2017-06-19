@@ -103,7 +103,7 @@ foreach ($data['path'] as $key => $value) {
                                     <ul class="dropdown-menu dropdown-menu-right">
                                         <li><a href="<?= APP::Module('Routing')->root ?>admin/mail/letters/<?= $data['group_sub_id'] ? APP::Module('Crypt')->Encode($data['group_sub_id']) : 0 ?>/add">Добавить письмо</a></li>
                                         <li><a href="<?= APP::Module('Routing')->root ?>admin/mail/letters/<?= $data['group_sub_id'] ? APP::Module('Crypt')->Encode($data['group_sub_id']) : 0 ?>/groups/add">Добавить группу</a></li>
-                                        <!--<li><a href="#" data-target="#letters-stat-modal" data-toggle="modal">Фильтры статистики</a></li>-->
+                                        <li><a href="#" data-target="#letters-stat-modal" data-toggle="modal">Настройки статистики</a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -182,10 +182,20 @@ foreach ($data['path'] as $key => $value) {
                 <div class="modal-content">
                     <div class="modal-header">
                         <button class="close" data-dismiss="modal"><span>&times;</span></button>
-                        <h4 class="modal-title">Фильтры статистики писем</h4>
+                        <h4 class="modal-title">Настройки статистики писем</h4>
                     </div>
                     <div class="modal-body">
                         <div class="form-horizontal form-padding">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Отображать статистику</label>
+                                <div class="col-sm-1">
+                                    <div class="toggle-switch m-t-10">
+                                        <input id="mail_stat" name="mail_stat" type="checkbox" hidden="hidden">
+                                        <label for="mail_stat" class="ts-helper"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--
                             <div class="form-group">
                                 <label class="col-md-3 control-label">Дата</label>
                                 <div class="col-md-9">
@@ -210,6 +220,7 @@ foreach ($data['path'] as $key => $value) {
                                     <input id="utm-label-content" name="utm-label[content]" type="hidden">
                                 </div>
                             </div>
+                            -->
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -233,6 +244,8 @@ foreach ($data['path'] as $key => $value) {
         <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/moment/min/moment.min.js"></script>
         <script src="<?= APP::Module('Routing')->root ?>public/ui/vendors/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 
+        <script src="<?= APP::Module('Routing')->root ?>public/ui/js/jquery.cookie.js"></script>
+        
         <? APP::Render('core/widgets/js') ?>
         
         <script>
@@ -298,13 +311,22 @@ foreach ($data['path'] as $key => $value) {
             }
 
             $('.save').on('click', function(e) {
-                document.location.href = '<?= APP::Module('Routing')->root ?>admin/mail/letters/<?= $data['group_sub_id'] ? APP::Module('Crypt')->Encode($data['group_sub_id']) : 0 ?>?statfilter[date][from]=' + $('#utm-labeld-date-from').val() + '&statfilter[date][to]=' + $('#utm-labeld-date-to').val() + '&statfilter[utm][source]=' + $('#utm-label-source').val() + '&statfilter[utm][medium]=' + $('#utm-label-medium').val() + '&statfilter[utm][campaign]=' + $('#utm-label-campaign').val() + '&statfilter[utm][term]=' + $('#utm-label-term').val() + '&statfilter[utm][content]=' + $('#utm-label-content').val() + '';
+                if ($('#mail_stat').prop('checked')) {
+                    $.cookie('mail_stat', '1', { expires: 365, path: '/' });
+                    //document.location.href = '<?= APP::Module('Routing')->root ?>admin/mail/letters/<?= $data['group_sub_id'] ? APP::Module('Crypt')->Encode($data['group_sub_id']) : 0 ?>?statfilter[date][from]=' + $('#utm-labeld-date-from').val() + '&statfilter[date][to]=' + $('#utm-labeld-date-to').val() + '&statfilter[utm][source]=' + $('#utm-label-source').val() + '&statfilter[utm][medium]=' + $('#utm-label-medium').val() + '&statfilter[utm][campaign]=' + $('#utm-label-campaign').val() + '&statfilter[utm][term]=' + $('#utm-label-term').val() + '&statfilter[utm][content]=' + $('#utm-label-content').val() + '';
+                } else {
+                    $.removeCookie('mail_stat', { path: '/' });
+                }
+                
+                document.location.href = '<?= APP::Module('Routing')->root ?>admin/mail/letters/<?= $data['group_sub_id'] ? APP::Module('Crypt')->Encode($data['group_sub_id']) : 0 ?>';
                 
                 $('#letters-stat-modal .modal-footer').remove();
                 $('#letters-stat-modal .modal-body').html('<center><div class="preloader pl-xxl"><svg class="pl-circular" viewBox="25 25 50 50"><circle class="plc-path" cx="50" cy="50" r="20" /></svg></div></center>');
             });
 
             $(document).ready(function() {
+                $('#mail_stat').prop('checked', <?= (int) isset($_COOKIE['mail_stat']) ?>);
+                
                 $('#utm-labeld-date-from').datetimepicker({
                     format: 'YYYY-MM-DD',
                     defaultDate: new Date()

@@ -3653,6 +3653,14 @@ class Analytics {
             }
         }
 
+        $costs_source = isset(APP::Module('Routing')->get['costs_source']) ? APP::Module('Routing')->get['costs_source'] : 'all';
+        
+        switch ($costs_source) {
+            case 'all': $costs_source_list = ['direct', 'googlecontext']; break;
+            case 'direct': $costs_source_list = ['direct']; break;
+            case 'googlecontext': $costs_source_list = ['googlecontext']; break;
+        }
+        
         $out = [];
 
         foreach (APP::Module('DB')->Select(
@@ -3664,7 +3672,7 @@ class Analytics {
             ], 
             'users_utm_index', 
             [
-                ['utm_source', '=', 'direct', PDO::PARAM_STR]
+                ['utm_source', 'IN', $costs_source_list, PDO::PARAM_STR]
             ],
             false,
             [
@@ -3782,16 +3790,31 @@ class Analytics {
 
             <!-- Begin page content -->
             <div class="container">
-                <span class="label label-primary">v0.34</span>
+                <span class="label label-primary">v0.45</span>
+                <div class="pull-right">
+                    <?
+                    foreach (Array(
+                        'all' => 'Все расходы',
+                        'direct' => 'Яндекс Директ',
+                        'googlecontext' => 'Google Adwords'
+                    ) as $key => $value) {
+                        if ($costs_source == $key) {
+                            ?><b style="margin-left: 10px"><?= $value ?></b><?
+                        } else {
+                            ?><a style="margin-left: 10px" href="?costs_source=<?= $key ?>"><?= $value ?></a><?
+                        }
+                    }
+                    ?>
+                </div>
                 <br><br>
                 <table class="table table-hover">
                     <tr>
-                        <!--<td>source</td>-->
-                        <td><a href="?sort[0]=utm_campaign&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'utm_campaign') { ?>style="font-weight: bold"<? } ?>>UTM-campaign</a> <? if ($sort_field == 'utm_campaign') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
-                        <td><a href="?sort[0]=utm_term&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'utm_term') { ?>style="font-weight: bold"<? } ?>>UTM-term</a> <? if ($sort_field == 'utm_term') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
-                        <td><a href="?sort[0]=cost&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'cost') { ?>style="font-weight: bold"<? } ?>>Расход</a> <? if ($sort_field == 'cost') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
-                        <td><a href="?sort[0]=profit&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'profit') { ?>style="font-weight: bold"<? } ?>>Доход</a> <? if ($sort_field == 'profit') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
-                        <td><a href="?sort[0]=roi&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'roi') { ?>style="font-weight: bold"<? } ?>>ROI</a> <? if ($sort_field == 'roi') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
+                        <td>source</td>
+                        <td><a href="?costs_source=<?= $costs_source ?>&sort[0]=utm_campaign&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'utm_campaign') { ?>style="font-weight: bold"<? } ?>>UTM-campaign</a> <? if ($sort_field == 'utm_campaign') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
+                        <td><a href="?costs_source=<?= $costs_source ?>&sort[0]=utm_term&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'utm_term') { ?>style="font-weight: bold"<? } ?>>UTM-term</a> <? if ($sort_field == 'utm_term') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
+                        <td><a href="?costs_source=<?= $costs_source ?>&sort[0]=cost&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'cost') { ?>style="font-weight: bold"<? } ?>>Расход</a> <? if ($sort_field == 'cost') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
+                        <td><a href="?costs_source=<?= $costs_source ?>&sort[0]=profit&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'profit') { ?>style="font-weight: bold"<? } ?>>Доход</a> <? if ($sort_field == 'profit') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
+                        <td><a href="?costs_source=<?= $costs_source ?>&sort[0]=roi&sort[1]=<?= $sort_mode == 'SORT_ASC' ? 'SORT_DESC' : 'SORT_ASC' ?>" <? if ($sort_field == 'roi') { ?>style="font-weight: bold"<? } ?>>ROI</a> <? if ($sort_field == 'roi') { echo $sort_mode == 'SORT_DESC' ? '<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>' : '<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>'; } ?></td>
                         <td>Когортный анализ</td>
                         <td>Комментарии</td>
                     </tr>
@@ -3806,7 +3829,7 @@ class Analytics {
                         $comments_html_out = count($comments_html) ? implode('<hr style="margin: 5px 0">', $comments_html) : 'Нет';
                         ?>
                         <tr>
-                            <!--<td><?= $value['utm_source'] ?></td>-->
+                            <td><?= $value['utm_source'] ?></td>
                             <td><?= $value['utm_campaign'] ?></td>
                             <td><?= $value['utm_term'] ?></td>
                             <td><?= number_format($value['cost'], 2, ',', ' ') ?></td>

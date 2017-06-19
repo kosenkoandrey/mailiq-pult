@@ -15,6 +15,7 @@ exec('cp -f ' . $src . '/custom/protected/render/core/widgets/template/header.ph
 exec('cp -f ' . $src . '/custom/protected/render/core/widgets/template/footer.php ' . $dist . '/protected/render/core/widgets/template/footer.php');
 exec('cp -f ' . $src . '/custom/public/ui/img/logo.png ' . $dist . '/public/ui/img/logo.png');
 
+exec('cp -f ' . $src . '/custom/protected/render/favicon/favicon.ico ' . $dist . '/protected/render/favicon/favicon.ico');
 exec('cp -f ' . $src . '/custom/protected/render/mail/spamreport.php ' . $dist . '/protected/render/mail/spamreport.php');
 exec('cp -f ' . $src . '/custom/protected/render/tunnels/unsubscribe.php ' . $dist . '/protected/render/tunnels/unsubscribe.php');
 exec('cp -f ' . $src . '/custom/protected/render/users/restore.php ' . $dist . '/protected/render/users/restore.php');

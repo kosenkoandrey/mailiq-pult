@@ -777,74 +777,84 @@ class Mail {
         // LETTERS STAT ////////////////////////////////////////////////////////
         
         $stat_filters = [];
-        
-        if ((isset(APP::Module('Routing')->get['statfilter']['date']['from'])) && (isset(APP::Module('Routing')->get['statfilter']['date']['to']))) {
-            $stat_filters[] = ['mail_events.log', 'IN', 'SELECT mail_log.id FROM mail_log WHERE mail_log.cr_date BETWEEN "' . APP::Module('Routing')->get['statfilter']['date']['from'] . ' 00:00:00" AND "' . APP::Module('Routing')->get['statfilter']['date']['to'] . ' 23:59:59"', PDO::PARAM_STR];
-        }
-        
         $letters_stat = [];
-
-        foreach ($list as $value) {
-            if ($value[0] == 'letter') {
-                $letters_stat[$value[1]] = [
-                    'delivered' => APP::Module('DB')->Select(
-                        $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
-                        ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
-                        array_merge(
-                            [
-                                ['mail_events.event', '=', 'delivered', PDO::PARAM_STR],
-                                ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
-                            ],
-                            $stat_filters
-                        )
-                    ),
-                    'open' => APP::Module('DB')->Select(
-                        $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
-                        ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
-                        array_merge(
-                            [
-                                ['mail_events.event', '=', 'open', PDO::PARAM_STR],
-                                ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
-                            ],
-                            $stat_filters
-                        )
-                    ),
-                    'click' => APP::Module('DB')->Select(
-                        $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
-                        ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
-                        array_merge(
-                            [
-                                ['mail_events.event', '=', 'click', PDO::PARAM_STR],
-                                ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
-                            ],
-                            $stat_filters
-                        )
-                    ),
-                    'unsubscribe' => APP::Module('DB')->Select(
-                        $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
-                        ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
-                        array_merge(
-                            [
-                                ['mail_events.event', '=', 'unsubscribe', PDO::PARAM_STR],
-                                ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
-                            ],
-                            $stat_filters
-                        )
-                    ),
-                    'spamreport' => APP::Module('DB')->Select(
-                        $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
-                        ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
-                        array_merge(
-                            [
-                                ['mail_events.event', '=', 'spamreport', PDO::PARAM_STR],
-                                ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
-                            ],
-                            $stat_filters
-                        )
-                    )
-                ];
+        
+        
+            if ((isset(APP::Module('Routing')->get['statfilter']['date']['from'])) && (isset(APP::Module('Routing')->get['statfilter']['date']['to']))) {
+                $stat_filters[] = ['mail_events.log', 'IN', 'SELECT mail_log.id FROM mail_log WHERE mail_log.cr_date BETWEEN "' . APP::Module('Routing')->get['statfilter']['date']['from'] . ' 00:00:00" AND "' . APP::Module('Routing')->get['statfilter']['date']['to'] . ' 23:59:59"', PDO::PARAM_STR];
             }
-        }
+
+            foreach ($list as $value) {
+                if ($value[0] == 'letter') {
+                    if (isset($_COOKIE['mail_stat'])) {
+                        $letters_stat[$value[1]] = [
+                            'delivered' => APP::Module('DB')->Select(
+                                $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
+                                ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
+                                array_merge(
+                                    [
+                                        ['mail_events.event', '=', 'delivered', PDO::PARAM_STR],
+                                        ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
+                                    ],
+                                    $stat_filters
+                                )
+                            ),
+                            'open' => APP::Module('DB')->Select(
+                                $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
+                                ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
+                                array_merge(
+                                    [
+                                        ['mail_events.event', '=', 'open', PDO::PARAM_STR],
+                                        ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
+                                    ],
+                                    $stat_filters
+                                )
+                            ),
+                            'click' => APP::Module('DB')->Select(
+                                $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
+                                ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
+                                array_merge(
+                                    [
+                                        ['mail_events.event', '=', 'click', PDO::PARAM_STR],
+                                        ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
+                                    ],
+                                    $stat_filters
+                                )
+                            ),
+                            'unsubscribe' => APP::Module('DB')->Select(
+                                $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
+                                ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
+                                array_merge(
+                                    [
+                                        ['mail_events.event', '=', 'unsubscribe', PDO::PARAM_STR],
+                                        ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
+                                    ],
+                                    $stat_filters
+                                )
+                            ),
+                            'spamreport' => APP::Module('DB')->Select(
+                                $this->settings['module_mail_db_connection'], ['fetch', PDO::FETCH_COLUMN], 
+                                ['COUNT(DISTINCT mail_events.log)'], 'mail_events',
+                                array_merge(
+                                    [
+                                        ['mail_events.event', '=', 'spamreport', PDO::PARAM_STR],
+                                        ['mail_events.letter', '=', $value[1], PDO::PARAM_INT],
+                                    ],
+                                    $stat_filters
+                                )
+                            )
+                        ];
+                    } else {
+                        $letters_stat[$value[1]] = [
+                            'delivered' => 0,
+                            'open' => 0,
+                            'click' => 0,
+                            'unsubscribe' => 0,
+                            'spamreport' => 0
+                        ];
+                    }
+                }
+            }
 
         ////////////////////////////////////////////////////////////////////////
 
