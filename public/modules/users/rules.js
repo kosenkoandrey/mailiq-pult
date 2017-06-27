@@ -921,11 +921,21 @@
                         '</table>'
                     ].join(''));
 
-                    if (rule.settings.logic !== undefined) $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).val(rule.settings.logic);
-                    $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).on('change', function(){$target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))))});
+                    $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).on('change', function(){
+                        $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
+                    });
 
-                    if (rule.settings.value !== undefined) $('.trigger_settings input[data-id="value"]', $trigger_rule_item).val(rule.settings.value);
-                    $('.trigger_settings input[data-id="value"]', $trigger_rule_item).on('input propertychange paste', function(){$target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))))});
+                    if (rule.settings.logic !== undefined) {
+                        $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).val(rule.settings.logic).trigger('change');
+                    }
+                    
+                    $('.trigger_settings input[data-id="value"]', $trigger_rule_item).on('input propertychange paste', function(){
+                        $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
+                    });
+                    
+                    if (rule.settings.value !== undefined) {
+                        $('.trigger_settings input[data-id="value"]', $trigger_rule_item).val(rule.settings.value).trigger('paste');
+                    }
                     
                     break;
                 case 'state':
@@ -953,11 +963,21 @@
                         '</table>'
                     ].join(''));
 
-                    if (rule.settings.logic !== undefined) $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).val(rule.settings.logic);
-                    $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).on('change', function(){$target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))))});
-
-                    if (rule.settings.value !== undefined) $('.trigger_settings select[data-id="value"]', $trigger_rule_item).val(rule.settings.value);
-                    $('.trigger_settings select[data-id="value"]', $trigger_rule_item).on('change', function(){$target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))))});
+                    $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).on('change', function(){
+                        $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
+                    });
+                    
+                    if (rule.settings.logic !== undefined) {
+                        $('.trigger_settings select[data-id="logic"]', $trigger_rule_item).val(rule.settings.logic).trigger('change');
+                    }
+                    
+                    $('.trigger_settings select[data-id="value"]', $trigger_rule_item).on('change', function(){
+                        $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
+                    });
+                    
+                    if (rule.settings.value !== undefined) {
+                        $('.trigger_settings select[data-id="value"]', $trigger_rule_item).val(rule.settings.value).trigger('change');
+                    }
                     
                     break;
                 case 'firstname':
@@ -1135,7 +1155,6 @@
                         '</table>'
                     ].join(''));
 
-                    
                     $('.date-picker-from', $trigger_rule_item).datetimepicker({
                         format: 'YYYY-MM-DD',
                         defaultDate: 0
@@ -1143,9 +1162,9 @@
                         objects['reg_date_from'] = e;
                         $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
                     });
+                    
                     if (rule.settings.date_from !== undefined) $('.trigger_settings input[data-id="date_from"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_from * 1000));
-                    
-                    
+
                     $('.date-picker-to', $trigger_rule_item).datetimepicker({
                         format: 'YYYY-MM-DD',
                         defaultDate: 0
@@ -1153,8 +1172,9 @@
                         objects['reg_date_to'] = e;
                         $target_rules.val($.toJSON(methods.render_value($('#trigger_rules_editor > .trigger_children > .trigger_rule'))));
                     });
-                    if (rule.settings.date_to !== undefined) $('.trigger_settings input[data-id="date_to"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_to * 1000));
                     
+                    if (rule.settings.date_to !== undefined) $('.trigger_settings input[data-id="date_to"]', $trigger_rule_item).data("DateTimePicker").date(new Date(rule.settings.date_to * 1000));
+                   
                     break;
                 case 'social_id':
                     $('.trigger_settings', $trigger_rule_item).append([

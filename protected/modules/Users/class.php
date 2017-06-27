@@ -682,7 +682,7 @@ class Users {
                 ]
             );
 
-            APP::Module('DB')->Update(
+            $result = APP::Module('DB')->Update(
                 $this->settings['module_users_db_connection'], 'users_about',
                 ['value' => 'active'],
                 [
@@ -690,7 +690,7 @@ class Users {
                     ['item', '=', 'state', PDO::PARAM_STR],
                     ['value', 'NOT IN', ['active', 'blacklist'], PDO::PARAM_STR]
                 ]
-            );
+            ) ? 'success' : 'error';
 
             APP::Module('DB')->Delete(
                 APP::Module('TaskManager')->settings['module_taskmanager_db_connection'], 'task_manager',
